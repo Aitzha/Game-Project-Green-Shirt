@@ -1,6 +1,6 @@
 //Final game project named "Green Shirt"
 
-class gameSettings {
+class Game {
 	constructor() {}
 	showMenu = true;
 	backGroundDarkness = 50;
@@ -53,16 +53,17 @@ class gameSettings {
 		stroke(0);
 		textSize(20);
 		text("Lives left: ", 50, 50)
-		text(gameChar.livesLeft, 50 + textWidth("Lives left: "), 50);
+		text(player.livesLeft, 50 + textWidth("Lives left: "), 50);
 	}
 }
 
-class GameChar {
+class Player {
 	livesLeft = 3;
 	posX = 0;
 	posY = 0;
 	velocityX = 0;
 	velocityY = 0;
+	momentumVelocity = 0;
 	isFalling = false;
 	jumpsLeft = 0;
 
@@ -78,7 +79,7 @@ class GameChar {
 	}
 
 	death() {
-		gameChar.livesLeft--;
+		this.livesLeft--;
 		this.posX = 950;
 		this.posY = 675;
 		this.velocityY = 0;
@@ -279,163 +280,111 @@ class Path {
 	//attributes needed to make and setup path
 	lengthOfPath = 2000;
 	wholePath = [];
-	wholePathCorX = [];
-	//attributes needed to make decorations for path
-	numberOfClouds;
-	cloud_posX = [];
-	cloud_posY = [];
-	proportion_cloud = [];
 
-	pathCreator() {
+	createPath() {
 		var allowedToChangePath = this.lengthOfPath - 2000;
 		var numberOfEachElement = allowedToChangePath / 1000;
 
 		//starting place
-		this.wholePath.push("ground"); this.wholePath.push("ground");
+		this.wholePath.push(new Ground(0, 675, 0));
+		this.wholePath.push(new Ground(500, 675, 0));
 
 		//path between start and finish
+		var currentPosX = 1000;
 		for(var i = 0; i < numberOfEachElement; i++) {
 			var pathElements = ["canyon", "ground", "platform"];
 			for(var j = 0; j < 3; j++) {
 				var index = round(random(0, pathElements.length - 1));
-				this.wholePath.push(pathElements[index]);
+				if(pathElements[index] == "ground") {
+					this.wholePath.push(new Ground(currentPosX, 675, 0));
+					currentPosX += 500;
+				} else if(pathElements[index] == "platform") {
+					var posY = round(random(675 - 380, 675 + 100));
+					var velocity = round(random(3, 10));
+					this.wholePath.push(new Platform(currentPosX, posY, velocity));
+					currentPosX += 300;
+				} else if(pathElements[index] == "canyon") {
+					this.wholePath.push(new Canyon(currentPosX));
+					currentPosX += 200;
+				}
 				pathElements.splice(index, 1);
 			}
 		}
 
 		//finish
-		this.wholePath.push("ground"); this.wholePath.push("ground");
+		this.wholePath.push(new Ground(this.lengthOfPath - 1000, 675, 0));
+		this.wholePath.push(new Ground(this.lengthOfPath - 500, 675, 0));
 	}
 
-	setupClouds() {
-		var currentPosX = -500
-		for(var i = 0; i < this.numberOfClouds; i++) {
-			currentPosX += round(random(150, 750));
-			this.cloud_posX.push(currentPosX);
-			this.cloud_posY.push(round(random(100, 200)));
-			this.proportion_cloud.push(random(1, 2));
-		}
-	}
-
-	setupPath() {
-		this.pathCreator();
-		var currentPosX = 0;
-		for(var i = 0; i < this.wholePath.length; i++) {
-			path.wholePathCorX.push(currentPosX);
-			if(this.wholePath[i] == "ground") {
-				ground.posX_array.push(currentPosX);
-				currentPosX += ground.width;
-			} else if(this.wholePath[i] == "canyon") {
-				canyons.posX_array.push(currentPosX);
-				currentPosX += canyons.width;
-			} else if(this.wholePath[i] == "platform") {
-				platforms.posX_array.push(currentPosX);
-				currentPosX += platforms.width;
-			}
-		}
-		game.setupPath = true;
-		//setup platform class
-		platforms.numberOfPlatforms = platforms.posX_array.length;
-		platforms.setupPlatforms();
-		//setup ground class
-		ground.numberOfGround = ground.posX_array.length;
-		//setup clouds(own attribute)
-		this.numberOfClouds = (this.lengthOfPath / 500) * 1.5
-		this.setupClouds();
-	}
-
-	cloud(index) {
-		fill (255, 255, 255);
-		ellipse(this.cloud_posX[index], this.cloud_posY[index], 50 * this.proportion_cloud[index]);
-		ellipse(this.cloud_posX[index] + (30 * this.proportion_cloud[index]), this.cloud_posY[index] + (10 * this.proportion_cloud[index]), 70 * this.proportion_cloud[index]);
-		ellipse(this.cloud_posX[index] + (50 * this.proportion_cloud[index]), this.cloud_posY[index] + (5 * this.proportion_cloud[index]), 50 * this.proportion_cloud[index]);
-		ellipse(this.cloud_posX[index] - (30 * this.proportion_cloud[index]), this.cloud_posY[index] + (15 * this.proportion_cloud[index]), 65 * this.proportion_cloud[index]);
-		ellipse(this.cloud_posX[index], this.cloud_posY[index] + (30 * this.proportion_cloud[index]), 50 * this.proportion_cloud[index]);
-	}
-
-	drawClouds() {
-		for(var i = 0; i < this.numberOfClouds; i++) {
-			this.cloud(i);
-		}
-	}
 }
 
-class Platforms {
-	constructor() {}
-	posX_array = [];
-	posY_array = [];
-	velocity_array = [];
+class Platform {
+	constructor(posX, posY, velocity) {
+		this.posX = posX;
+		this.posY = posY;
+		this.velocity = velocity;
+	}
+	posX = 0;
+	posY = 0;
+	velocity = 0;
 	width = 300;
 	height = 50;
+	collisionShape = true;
 
-	numberOfPlatforms = 0;
-
-	setupPlatforms() {
-		for(var i = 0; i < this.numberOfPlatforms; i++) {
-			var posY = round(random(ground.floorPosY - 380, ground.floorPosY + 100));
-			this.posY_array.push(posY);
-			this.velocity_array.push(round(random(3, 10)));
+	movePlatform() {
+		this.posY += this.velocity;
+		if(this.posY <= 275 || this.posY >= 775) {
+			this.velocity = this.velocity * (-1);
 		}
 	}
 
+	drawObject() {
+		fill(100 - game.backGroundDarkness, 155 - game.backGroundDarkness, 255 - game.backGroundDarkness);
+		rect(this.posX, this.posY, this.width, 225);
+		fill(210 - game.backGroundDarkness, 105 -game.backGroundDarkness, 30 - game.backGroundDarkness);
+		rect(this.posX + 10, this.posY, this.width - 20, this.height, 50);
 
-	movePlatforms() {
-		for(var i = 0; i < this.numberOfPlatforms; i++) {
-			this.posY_array[i] += this.velocity_array[i];
-			if(ground.floorPosY - 400 >= this.posY_array[i] || ground.floorPosY + 100 <= this.posY_array[i]) {
-				this.velocity_array[i] = this.velocity_array[i] * (-1);
-			}
-		}
 	}
-
-	platform(index) {
-		fill(100, 155, 255);
-		rect(this.posX_array[index], ground.floorPosY, 300, height / 4);
-		fill(210, 105, 30);
-		rect(this.posX_array[index] + 10, this.posY_array[index], 280, 50, 50);
-	}
-
-	drawPlatforms() {
-		for(var i = 0; i < this.posX_array.length; i++) {
-			this.platform(i);
-		}
-	}
-
-
 }
 
 class Ground {
-	constructor() {}
-	posX_array = [];
-	floorPosY = 675;
+	constructor(posX, posY, velocity) {
+		this.posX = posX;
+		this.posY = posY;
+		this.velocity = velocity;
+	}
+	// posX_array = [];
+	posX = 0;
+	posY = 675;
+	velocity = 0;
 	width = 500;
 	height = 225;
-	numberOfGround = 0;
+	collisionShape = true;
+	drawObject() {
+		fill(0 - game.backGroundDarkness, 155 - game.backGroundDarkness, 0 - game.backGroundDarkness);
+		rect(this.posX, this.posY, this.width, this.height); // draw some green ground
+	}
 } // a bit later
 
-class Canyons {
-	constructor() {}
-	posX_array = [];
-	width = 200;
-	canyon(posX) {
-		fill(100, 155, 255);
-		rect(posX, ground.floorPosY, 200, height / 4);
+class Canyon {
+	constructor(posX) {
+		this.posX = posX;
 	}
+	// posX_array = [];
+	collisionShape = false;
+	posX = 0;
+	width = 200;
 
-	drawCanyons() {
-		for(var i = 0; i < this.posX_array.length; i++) {
-			this.canyon(this.posX_array[i])
-		}
+	drawObject() {
+		fill(100, 155, 255);
+		rect(this.posX, height * 3 / 4, this.width, height / 4);
 	}
 }
 
 
-var game = new gameSettings();
-var gameChar = new GameChar();
+var game = new Game();
+var player = new Player();
 var path = new Path();
-var platforms = new Platforms();
-var ground = new Ground();
-var canyons = new Canyons();
 
 
 function setup() {
@@ -447,165 +396,215 @@ class Physics {
 	constructor() {}
 	gravitation = 0.5;
 
-	showCanvasShapes() {
+	showCollisionShape() {
 		stroke(255, 0, 0);
 		strokeWeight(2);
 		noFill();
-
-		//canvasShape of gameChar
-		rect(gameChar.posX - 20, gameChar.posY - 85, 40, 85);
-		//canvasShape of platforms
-		for(var i = 0; i < platforms.numberOfPlatforms; i++) {
-			rect(platforms.posX_array[i], platforms.posY_array[i], platforms.width, platforms.height);
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if(path.wholePath[i].collisionShape) {
+				rect(path.wholePath[i].posX, path.wholePath[i].posY, path.wholePath[i].width, path.wholePath[i].height);
+			}
 		}
-		//canvasShape of ground
-		for(var i = 0; i < ground.posX_array.length; i++) {
-			rect(ground.posX_array[i], ground.floorPosY, ground.width, ground.height);
-		}
-
+		//collision shape of character
+		rect(player.posX - 20, player.posY - 85, 40, 85);
 	}
 
 	checkRight() {
-		//check if right is blocked
-		//by platforms
-		for(var i = 0; i < platforms.numberOfPlatforms; i++) {
-			if(platforms.posX_array[i] == gameChar.posX + 20
-			&& !(gameChar.posY <= platforms.posY_array[i])
-			&& !(gameChar.posY - 70 >= platforms.posY_array[i] + platforms.height)) {
-				gameChar.rightBlocked = true;
-				return;
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if(path.wholePath[i].collisionShape) {
+				if(path.wholePath[i].posX == player.posX + 20
+				&& !(player.posY <= path.wholePath[i].posY)
+				&& !(player.posY - 85 >= path.wholePath[i].posY + path.wholePath[i].height)) {
+					player.rightBlocked = true;
+					return;
+				}
 			}
 		}
-		//by ground
-		for(var i = 0; i < ground.numberOfGround; i++) {
-			if(ground.posX_array[i] == gameChar.posX + 20
-			&& !(gameChar.posY <= ground.floorPosY)
-			&& !(gameChar.posY - 70 >= ground.floorPosY + ground.height)) {
-				gameChar.rightBlocked = true;
-				return;
-			}
-		}
-		//if Game Over player can't move or player reached barrier of the map
-		if(gameChar.livesLeft == 0 || gameChar.posX == path.lengthOfPath) {
-			gameChar.rightBlocked = true;
+		//Player can't move if reached the barrier on the right
+		if(player.posX == path.lengthOfPath) {
+			player.rightBlocked = true;
 			return;
 		}
 
-		gameChar.rightBlocked = false;
+		player.rightBlocked = false;
 	}
 
 	checkLeft() {
-		//check if left is blocked
-		//by platforms
-		for(var i = 0; i < platforms.numberOfPlatforms; i++) {
-			if(platforms.posX_array[i] + platforms.width == gameChar.posX - 20
-			&& !(gameChar.posY <= platforms.posY_array[i])
-			&& !(gameChar.posY - 70 >= platforms.posY_array[i] + platforms.height)) {
-				gameChar.leftBlocked = true;
-				return;
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if(path.wholePath[i].collisionShape) {
+				if(path.wholePath[i].posX + path.wholePath[i].width == player.posX - 20
+				&& !(player.posY <= path.wholePath[i].posY)
+				&& !(player.posY - 85 >= path.wholePath[i].posY + path.wholePath[i].height)) {
+					player.leftBlocked = true;
+					return;
+				}
 			}
 		}
-		//by ground
-		for(var i = 0; i < ground.numberOfGround; i++) {
-			if(ground.posX_array[i] + ground.width == gameChar.posX - 20
-			&& !(gameChar.posY <= ground.floorPosY)
-			&& !(gameChar.posY - 70 >= ground.floorPosY + ground.height)) {
-				gameChar.leftBlocked = true;
-				return;
-			}
-		}
-		//if Game Over player can't move or player reached barrier of the map
-		if(gameChar.livesLeft == 0 || gameChar.posX == 0) {
-			gameChar.leftBlocked = true;
+		//Player can't move the left if reached the barrier on the left
+		if(player.posX == 0) {
+			player.leftBlocked = true;
 			return;
 		}
 
-		gameChar.leftBlocked = false;
+		player.leftBlocked = false;
 	}
 
 	checkDown() {
 		//check if down is blocked
-		if(gameChar.velocityY > 0) {
-			gameChar.isFalling = true;
-		} else if(gameChar.velocityY < 0) {
-			gameChar.isFalling = false;
-		}
 
-		//by platforms
-		for(var i = 0 ; i < platforms.numberOfPlatforms; i++) {
-			if((gameChar.posY >= platforms.posY_array[i] && gameChar.posY <= platforms.posY_array[i] + 25)
-			&& !(gameChar.posX + 20 <= platforms.posX_array[i])
-			&& !(gameChar.posX - 20 >= platforms.posX_array[i] + platforms.width)
-			&& gameChar.isFalling) {
+		// //by platforms
+		// for(var i = 0 ; i < platforms.numberOfPlatforms; i++) {
+		// 	if((player.posY >= platforms.posY_array[i] && player.posY <= platforms.posY_array[i] + 25)
+		// 	&& !(player.posX + 20 <= platforms.posX_array[i])
+		// 	&& !(player.posX - 20 >= platforms.posX_array[i] + platforms.width)
+		// 	&& player.isFalling) {
+		//
+		// 		player.downBlocked = true;
+		// 		player.posY = platforms.posY_array[i];
+		// 		player.velocityY = 0;
+		// 		player.jumpsLeft = 1;
+		// 		return;
+		// 	}
+		// }
+		// //by ground
+		// for(var i = 0; i < ground.numberOfGround; i++) {
+		// 	if((player.posY >= ground.posY && player.posY <= ground.posY + 50)
+		// 	&& !(player.posX + 20 <= ground.posX_array[i])
+		// 	&& !(player.posX - 20 >= ground.posX_array[i] + ground.width)
+		// 	&& player.isFalling) {
+		//
+		// 		player.downBlocked = true;
+		// 		player.posY = ground.posY;
+		// 		player.velocityY = 0;
+		// 		player.jumpsLeft = 1;
+		// 		return;
+		// 	}
+		// }
 
-				gameChar.downBlocked = true;
-				gameChar.posY = platforms.posY_array[i];
-				gameChar.velocityY = 0;
-				gameChar.jumpsLeft = 1;
-				return;
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if(path.wholePath[i] instanceof Platform) {
+				if((player.posY >= path.wholePath[i].posY - 3 && player.posY <= path.wholePath[i].posY + 25)
+				&& !(player.posX + 20 <= path.wholePath[i].posX)
+				&& !(player.posX - 20 >= path.wholePath[i].posX + path.wholePath[i].width)
+				&& player.velocityY >= 0) {
+
+					player.downBlocked = true;
+					player.posY = path.wholePath[i].posY;
+					player.jumpsLeft = 1;
+					player.velocityY = 0;
+					// player.momentumVelocity = path.wholePath[i].velocity;
+					if(path.wholePath[i].velocity <= 0) {
+						player.momentumVelocity = path.wholePath[i].velocity;
+					}
+
+					return;
+				}
 			}
 		}
-		//by ground
-		for(var i = 0; i < ground.numberOfGround; i++) {
-			if((gameChar.posY >= ground.floorPosY && gameChar.posY <= ground.floorPosY + 50)
-			&& !(gameChar.posX + 20 <= ground.posX_array[i])
-			&& !(gameChar.posX - 20 >= ground.posX_array[i] + ground.width)
-			&& gameChar.isFalling) {
 
-				gameChar.downBlocked = true;
-				gameChar.posY = ground.floorPosY;
-				gameChar.velocityY = 0;
-				gameChar.jumpsLeft = 1;
-				return;
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if(path.wholePath[i] instanceof Ground) {
+				if ((player.posY >= path.wholePath[i].posY && player.posY <= path.wholePath[i].posY + 50)
+					&& !(player.posX + 20 <= path.wholePath[i].posX)
+					&& !(player.posX - 20 >= path.wholePath[i].posX + path.wholePath[i].width)
+					&& player.velocityY >= 0) {
+
+					player.downBlocked = true;
+					player.posY = path.wholePath[i].posY;
+					player.jumpsLeft = 1;
+					player.velocityY = 0;
+					// player.momentumVelocity = path.wholePath[i].velocity;
+					if(path.wholePath[i].velocity <= 0) {
+						player.momentumVelocity = path.wholePath[i].velocity;
+					}
+					return;
+				}
 			}
 		}
 
-		gameChar.jumpsLeft = 0;
-		gameChar.downBlocked = false;
+		player.jumpsLeft = 0;
+		player.downBlocked = false;
 	}
 
 	checkUp() {
 		//check if up is blocked
 		//by platform
-		for(var i = 0 ; i < platforms.numberOfPlatforms; i++) {
-			if((gameChar.posY - 85 >= platforms.posY_array[i] + 25 && gameChar.posY - 70 <= platforms.posY_array[i] + 50)
-				&& !(gameChar.posX + 20 <= platforms.posX_array[i])
-				&& !(gameChar.posX - 20 >= platforms.posX_array[i] + platforms.width)) {
+		// for(var i = 0 ; i < platforms.numberOfPlatforms; i++) {
+		// 	if((player.posY - 85 >= platforms.posY_array[i] + 25 && player.posY - 70 <= platforms.posY_array[i] + 50)
+		// 		&& !(player.posX + 20 <= platforms.posX_array[i])
+		// 		&& !(player.posX - 20 >= platforms.posX_array[i] + platforms.width)) {
+		//
+		// 		player.upBlocked = true;
+		// 		player.posY = platforms.posY_array[i] + 135;
+		// 		player.velocityY = 0;
+		// 		return;
+		// 	}
+		// }
 
-				gameChar.upBlocked = true;
-				gameChar.posY = platforms.posY_array[i] + 135;
-				gameChar.velocityY = 0;
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if((player.posY - 85 > path.wholePath[i].posY + path.wholePath[i].height - 25
+			&& player.posY - 85 < path.wholePath[i].posY + path.wholePath[i].height)
+			&& !(player.posX + 20 <= path.wholePath[i].posX)
+			&& !(player.posX - 20 >= path.wholePath[i].posX + path.wholePath[i].width)) {
+
+				player.upBlocked = true;
+				player.posY = path.wholePath[i].posY + path.wholePath[i].height + 85;
+				player.velocityY = 0;
+				if(path.wholePath[i].velocity > 0) {
+					player.momentumVelocity = path.wholePath[i].velocity;
+				}
 				return;
 			}
 		}
 
-		gameChar.upBlocked = false;
+		player.upBlocked = false;
 	}
 
 	moveObjects() {
-		platforms.movePlatforms();
-		this.checkRight();
-		this.checkLeft();
-		this.checkDown();
-		this.checkUp();
-
-		//move game character horizontally
-		if(!(gameChar.leftBlocked && gameChar.velocityX < 0) && !(gameChar.rightBlocked && gameChar.velocityX > 0)) {
-			gameChar.posX += gameChar.velocityX;
-			if(gameChar.posX - game.scrollPos <= 500 || gameChar.posX - game.scrollPos >= 1400) {
-				game.scrollPos += gameChar.velocityX
+		for(var i = 0; i < path.wholePath.length; i++) {
+			if(path.wholePath[i] instanceof Platform) {
+				path.wholePath[i].movePlatform();
 			}
 		}
 
-		//move game character vertically
-		if(!gameChar.downBlocked) {
-			gameChar.velocityY += this.gravitation;
+		this.checkDown();
+		this.checkUp();
+		this.checkRight();
+		this.checkLeft();
+
+
+
+
+		//move game character horizontally
+		if(!(player.leftBlocked && player.velocityX < 0) && !(player.rightBlocked && player.velocityX > 0)) {
+			player.posX += player.velocityX;
+			if(player.posX - game.scrollPos <= 500 || player.posX - game.scrollPos >= 1400) {
+				game.scrollPos += player.velocityX
+			}
 		}
-		gameChar.posY += gameChar.velocityY;
+
+		if(player.velocityY >= 0) {
+			player.isFalling = true;
+		} else if(player.velocityY < 0) {
+			player.isFalling = false;
+		}
+
+		//move game character vertically
+		if(!player.downBlocked) {
+			player.velocityY += player.momentumVelocity;
+			player.momentumVelocity = 0;
+			player.velocityY += this.gravitation;
+		} else {
+			player.velocityY = 0;
+		}
+		player.posY += player.velocityY;
+
+
+
 
 		//check if game character is lose
-		if(gameChar.posY > ground.floorPosY + 300) {
-			gameChar.death();
+		if(player.posY > 975) {
+			player.death();
 		}
 	}
 }
@@ -618,8 +617,6 @@ var physics = new Physics();
 function draw() {
 	background(100 - game.backGroundDarkness, 155 - game.backGroundDarkness, 255 - game.backGroundDarkness); // fill the sky blue
 	noStroke();
-	fill(0 - game.backGroundDarkness, 155 - game.backGroundDarkness, 0 - game.backGroundDarkness);
-	rect(0, ground.floorPosY, width, height/4); // draw some green ground
 
 
 	push();
@@ -629,15 +626,16 @@ function draw() {
 		game.backGroundDarkness = 0;
 		//setup ground, platform and canyon classes (Because it doesn't work in setup function)
 		if(!game.setupPath) {
-			path.setupPath();
+			path.createPath();
+			game.setupPath = true;
 		}
-		path.drawClouds();
-		//draws objects
-		canyons.drawCanyons();
-		platforms.drawPlatforms();
-		gameChar.drawGameChar();
+
+		for(var i = 0; i < path.wholePath.length; i++) {
+			path.wholePath[i].drawObject();
+		}
+		player.drawGameChar();
 		//moves objects
-		physics.showCanvasShapes();
+		physics.showCollisionShape();
 		physics.moveObjects();
 	} else if(game.showMenu) {
 		game.menuOfGame();
@@ -648,7 +646,7 @@ function draw() {
 	game.indicator();
 
 	//Game Over when player died 3 times
-	if(gameChar.livesLeft == 0) {
+	if(player.livesLeft == 0) {
 		fill(0);
 		stroke(0);
 		textSize(80);
@@ -659,21 +657,21 @@ function draw() {
 
 
 function keyPressed() {
-	if((key == 'A' || keyCode == 37) && !game.showMenu) {
-		gameChar.velocityX = -10;
-	} else if((key == 'D' || keyCode == 39) && !game.showMenu) {
-		gameChar.velocityX = 10;
-	} else if(key == ' ' && !game.showMenu && gameChar.jumpsLeft > 0) { // make changes
-		gameChar.velocityY = -13;
-		gameChar.jumpsLeft--;
+	if((key == 'A' || keyCode == 37) && !game.showMenu && player.livesLeft > 0) {
+		player.velocityX = -10;
+	} else if((key == 'D' || keyCode == 39) && !game.showMenu && player.livesLeft > 0) {
+		player.velocityX = 10;
+	} else if(key == ' ' && !game.showMenu && player.jumpsLeft > 0 && player.livesLeft > 0) { // make changes
+		player.velocityY += -13;
+		player.jumpsLeft--;
 	}
 }
 
 function keyReleased() {
 	if(key == 'A' || keyCode == 37) {
-		gameChar.velocityX = 0;
+		player.velocityX = 0;
 	} else if(key == 'D' || keyCode == 39) {
-		gameChar.velocityX = 0;
+		player.velocityX = 0;
 	}
 }
 
