@@ -1,7 +1,48 @@
-//Final game project named "Green Shirt"
-
+// This is my final game project names “Green Shirt”
 //
+// Firstly, I want you to pay attention to the fact that I made this project using classes and arrays of classes.
+// Because I’ve already had experience with OOP, I wanted to make my first project with classes.
+//
+// 	Here I have 7 main classes that are elements of the path and the main feature of the game.
+// 	They are Game, Player, Path, Platform, Ground, Canyon and Physics.
+// 	And also 5 other additional classes. They are Cloud, Tree, Mountain, Coin and Enemy.
+//
+// 	To see their attributes and functions you can check yourself in the code or just look at the diagram I’ve included in .zip file.
+//
+// 	Now let me explain how the 3 extensions I added works.
 
+
+//1)The first one is Platforms. In the class “Path”, there is a function called “createPath()” and an array of classes
+// 	called “wholePath”.The “createPath()” function is creating a path randomly considering the length of the path.
+// 	It means you can change the length of the path in the menu which you will see after starting the code on the browser.
+// 	The function I mentioned before chooses what element will be next on the path and push it inside “wholePath”
+// 	by giving each class their posX, posY and velocity. Now in the class “Platform”, it has attributes: posX, posY,
+// 	velocity, width, height and collisionShape, and also functions “movePlatform()” and “drawObject()”.
+//  “drawObject()” draws a platform on the current position, “movePlatform()” moves a platform with its velocity
+//  and change velocity when a platform reaches its highest and lowest position. It has “collisionShape” variable
+//  which is always true, it needed because not every object has a collision shape.
+
+
+//2)The second one is the sounds. This game has 7 various sounds which are: jumpSound, deathSound, collectCoinSound,
+// 	gameOverSound, youWonSound, backGroundMusic, selectDifficultySound.
+// 	jumpSound - uses when the player jumps.
+// 	deathSound - uses when the player dies by falling or killed by an enemy.
+// 	collectCoinSound - uses when the player collects a coin.
+// 	gameOverSound - uses when the player has 0 lives left.
+// 	youWonSound - uses when the player reaches the finish.
+// 	backGroundMusic - plays as backgroundMusic when difficulty is chosen. (music is Avenza - Game on)
+//  selectDifficultySound - uses when the user presses any button on the menu.
+// 	The sounds and music use the attribute of the class Game called soundVolume which be set up on the menu of the game.
+// 	(notice: wait several seconds after starting the game on the browser. That gives a little time for music to load)
+
+
+//3)The third extension is Enemies. Which setups almost the same way as Platform.
+// In the class “Path” enemies creates in the function “decorate()” and saves in an array of classes of class “Game”.
+// In the class “Enemy” there are three 3 functions. The first and easiest one is “killPlayer()”
+// which just calls a function “death()” of class “Player” when the player is too close to the enemy.
+// The next is “drawObject()” which uses attributes currentPosX, posY and proportion of the same class “Enemy”.
+// The last one is “moveObject()” which changes currentPosX with velocityX each frame
+// and check if the enemy is too far from its initialPosX.
 
 
 //main elements of the game
@@ -1132,4 +1173,3 @@ function mousePressed() {
 		game.showMenu = false;
 	}
 }
-
