@@ -1,5 +1,9 @@
 //Final game project named "Green Shirt"
 
+//
+
+
+
 //main elements of the game
 class Game {
 	constructor() {}
@@ -11,6 +15,7 @@ class Game {
 	youWonSoundPlayed = false;
 	enemiesExist = false;
 	collisionShape = false;
+	soundVolume = 0.3;
 	coins = [];
 	enemies = [];
 
@@ -19,15 +24,65 @@ class Game {
 		if(this.customiseMap) {
 			fill(115, 115, 115);
 			noStroke();
-			rect(width / 2 - 200, height / 2 - 200, 400, 300, 50);
+			rect(width / 2 - 200, height / 2 - 200, 400, 600, 50);
 
+			fill(0);
 			textSize(25);
+			text("Show collision shapes", width / 2 - 180, height / 2 - 150);
+			text("Length of path", width / 2 - 180, height / 2);
+			text("Add enemies", width / 2 - 180, height / 2 + 150);
+			text("Sound volume", width / 2 - 180, height / 2 + 300);
 
+
+//first line
+			stroke(0);
+			strokeWeight(2);
+			if(this.collisionShape) {
+				fill(0);
+			} else {
+				noFill();
+			}
+			rect(width / 2 + 130, height / 2 - 170, 20, 20);
+//second line
+			textSize(15);
+			noFill();
+			rect(width / 2 + 90, height / 2 - 20, 20, 20);
+			line(width / 2 + 90, height / 2 - 10, width / 2 + 110, height / 2 - 10);
+			rect(width / 2 + 175, height / 2 - 20, 20, 20);
+			line(width / 2 + 175, height / 2 - 10, width / 2 + 195, height / 2 - 10);
+			line(width / 2 + 185, height / 2 - 20, width / 2 + 185, height / 2);
+			fill(0);
+			noStroke();
+			text(path.lengthOfPath, width / 2 + 120, height / 2 - 5);
+//third line
+			stroke(0);
+			strokeWeight(2);
+			if(this.enemiesExist) {
+				fill(0);
+			} else {
+				noFill();
+			}
+			rect(width / 2 + 130, height / 2 + 130, 20, 20);
+//forth line
+			textSize(15);
+			noFill();
+			rect(width / 2 + 90, height / 2 + 280, 20, 20);
+			line(width / 2 + 90, height / 2 + 290, width / 2 + 110, height / 2 + 290);
+			rect(width / 2 + 175, height / 2 + 280, 20, 20);
+			line(width / 2 + 175, height / 2 + 290, width / 2 + 195, height / 2 + 290);
+			line(width / 2 + 185, height / 2 + 280, width / 2 + 185, height / 2 + 300);
+			fill(0);
+			noStroke();
+			text(this.soundVolume, width / 2 + 130, height / 2 + 295);
+
+//"start" button
+			textSize(25);
+			text("Start", width / 2 - 30, height / 2 + 380);
 		} else {
 			//menu
 			fill(115, 115, 115);
 			noStroke();
-			rect(width / 2 - 200, height / 2 - 200, 400, 500, 50);
+			rect(width / 2 - 200, height / 2 - 200, 400, 550, 50);
 
 			//text
 			fill(0);
@@ -66,6 +121,20 @@ class Game {
 			text("Short path and no enemies", width / 2 - 150, height / 2 - 55);
 			text("Long path and no enemies", width / 2 - 148, height / 2 + 45);
 			text("Long path with enemies", width / 2 - 130, height / 2 + 145);
+
+			text("Sound volume", width / 2 - 180, height / 2 + 300);
+			stroke(0);
+			strokeWeight(2);
+			textSize(15);
+			noFill();
+			rect(width / 2 + 90, height / 2 + 280, 20, 20);
+			line(width / 2 + 90, height / 2 + 290, width / 2 + 110, height / 2 + 290);
+			rect(width / 2 + 175, height / 2 + 280, 20, 20);
+			line(width / 2 + 175, height / 2 + 290, width / 2 + 195, height / 2 + 290);
+			line(width / 2 + 185, height / 2 + 280, width / 2 + 185, height / 2 + 300);
+			fill(0);
+			noStroke();
+			text(this.soundVolume, width / 2 + 130, height / 2 + 295);
 		}
 
 	}
@@ -881,27 +950,20 @@ var selectDifficultySound;
 
 function preload() {
 	soundFormats('mp3', 'wav');
-	collectCoinSound = loadSound("assets/coin collect2.wav");
-	collectCoinSound.setVolume(0.3);
-	youWonSound = loadSound("assets/you won.wav");
-	youWonSound.setVolume(0.3);
-	selectDifficultySound = loadSound("assets/select difficulty.wav");
-	selectDifficultySound.setVolume(0.3);
-	backGroundMusic = loadSound("assets/background2.mp3");
-	backGroundMusic.setVolume(0.3);
+	collectCoinSound = loadSound("assets/coinCollect.wav");
+	youWonSound = loadSound("assets/youWon.wav");
+	selectDifficultySound = loadSound("assets/selectDifficulty.wav");
+	backGroundMusic = loadSound("assets/background.mp3");
 	jumpSound = loadSound('assets/jump.wav');
-	jumpSound.setVolume(0.3);
-	deathSound = loadSound('assets/death2.mp3');
-	deathSound.setVolume(0.3);
-	gameOverSound = loadSound('assets/game over.wav');
-	gameOverSound.setVolume(0.3);
+	deathSound = loadSound('assets/death.mp3');
+	gameOverSound = loadSound('assets/gameOver.wav');
+
 }
 
 
 function setup() {
 	createCanvas(1900, 900);
 }
-
 
 
 function draw() {
@@ -958,10 +1020,21 @@ function draw() {
 
 		player.drawGameChar();
 
-		// physics.showCollisionShape();
+//physics and so on
+		if(game.collisionShape) {
+			physics.showCollisionShape();
+		}
 		physics.moveObjects();
 		game.playMusic();
+
 	} else if(game.showMenu) {
+		collectCoinSound.setVolume(game.soundVolume);
+		youWonSound.setVolume(game.soundVolume);
+		selectDifficultySound.setVolume(game.soundVolume);
+		backGroundMusic.setVolume(game.soundVolume - 0.15);
+		jumpSound.setVolume(game.soundVolume);
+		deathSound.setVolume(game.soundVolume);
+		gameOverSound.setVolume(game.soundVolume);
 		game.menuOfGame();
 	}
 	pop();
@@ -1002,22 +1075,61 @@ function keyReleased() {
 }
 
 function mousePressed() {
-	if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 - 120 && mouseY < height / 2 - 40 && game.showMenu) {
+	if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 - 120 && mouseY < height / 2 - 40
+	&& game.showMenu && !game.customiseMap) {
+		path.lengthOfPath = 5000;
+		game.showMenu = false;
+		selectDifficultySound.play();
+	} else if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 - 20 && mouseY < height / 2 + 60
+	&& game.showMenu && !game.customiseMap) {
 		path.lengthOfPath = 10000;
 		game.showMenu = false;
 		selectDifficultySound.play();
-	} else if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 - 20 && mouseY < height / 2 + 60 && game.showMenu) {
-		path.lengthOfPath = 30000;
+	} else if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 + 80 && mouseY < height / 2 + 160
+	&& game.showMenu && !game.customiseMap) {
 		game.showMenu = false;
-		selectDifficultySound.play();
-	} else if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 + 80 && mouseY < height / 2 + 160 && game.showMenu) {
-		game.showMenu = false;
-		path.lengthOfPath = 30000;
+		path.lengthOfPath = 10000;
 		game.enemiesExist = true;
 		selectDifficultySound.play();
-	} else if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 + 180 && mouseY < height / 2 + 260 && game.showMenu) {
+	} else if(mouseX > width / 2 - 170 && mouseX < width / 2 + 170 && mouseY > height / 2 + 180 && mouseY < height / 2 + 260
+	&& game.showMenu && !game.customiseMap) {
 		game.customiseMap = true;
 		selectDifficultySound.play();
+	} else if(mouseY > height / 2 - 20 && mouseY < height / 2 && game.customiseMap) {
+		if(mouseX > width / 2 + 90 && mouseX < width / 2 + 110 && path.lengthOfPath > 2000) {
+			path.lengthOfPath -= 1000;
+			selectDifficultySound.play();
+		} else if(mouseX > width / 2 + 175 && mouseX < width / 2 + 195 && path.lengthOfPath < 99000) {
+			path.lengthOfPath += 1000;
+			selectDifficultySound.play();
+		}
+	} else if(mouseX > width / 2 + 130 && mouseX < width / 2 + 150 && game.customiseMap) {
+		if(mouseY > height / 2 - 170 && mouseY < height / 2 - 150) {
+			if(game.collisionShape) {
+				game.collisionShape = false;
+			} else {
+				game.collisionShape = true;
+			}
+			selectDifficultySound.play();
+		} else if(mouseY > height / 2 + 130 && mouseY < height / 2 + 150) {
+			if(game.enemiesExist) {
+				game.enemiesExist = false;
+			} else {
+				game.enemiesExist = true;
+			}
+			selectDifficultySound.play();
+		}
+	} else if(mouseY > height / 2 + 280 && mouseY < height / 2 + 300) {
+		if(mouseX > width / 2 + 90 && mouseX < width / 2 + 110 && game.soundVolume > 0.2) {
+			game.soundVolume -= 0.1;
+			selectDifficultySound.play();
+		} else if(mouseX > width / 2 + 175 && mouseX < width / 2 + 195 && game.soundVolume < 1) {
+			game.soundVolume += 0.1;
+			selectDifficultySound.play();
+		}
+	} else if(mouseX > width / 2 - 30 && mouseX < width / 2 + 25 && mouseY > height / 2 + 360 && mouseY < height / 2 + 380
+	&& game.customiseMap) {
+		game.showMenu = false;
 	}
 }
 
